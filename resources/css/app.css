@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/* Smooth scroll voor ankerlinks (navigatie-koppen die naar #features/
+   #dashboard/... springen). Op :root i.p.v. enkel op specifieke links,
+   zodat het ook voor elke toekomstige ankerlink werkt zonder JS. */
+html {
+    scroll-behavior: smooth;
+}
+
+/* De header is `fixed` met een hoogte van 80px. Zonder deze
+   scroll-margin-top komt de bovenkant van elke ankersectie exact onder
+   de bovenkant van het scherm terecht, maar de vaste header bedekt die
+   eerste ~80px daarna alsnog - de sectietitel blijft dan verborgen
+   achter de header, ook al scrollt de browser technisch naar de juiste
+   plek. scroll-margin-top laat de browser die marge zelf inrekenen. */
+[id] {
+    scroll-margin-top: 5.5rem;
+}
+
+/* Verplicht bij elk Alpine.js-project: zonder deze regel heeft
+   x-cloak geen effect. Alpine verwijdert het attribuut pas zodra het
+   een element initialiseert; in de korte periode dat de pagina al
+   geladen is maar Alpine nog niet gestart, zou een [x-cloak]-element
+   anders gewoon zichtbaar blijven (bv. een dropdown die héél even
+   ongewenst opflitst vóór x-show het kan verbergen). */
+[x-cloak] {
+    display: none !important;
+}
+
+/* =========================================================
+   ANIMATIES - uitsluitend transform/opacity (GPU-versneld via de
+   compositor, triggert geen layout/paint-herberekening), korte duur
+   (300-500ms). Respecteert prefers-reduced-motion hieronder.
+   ========================================================= */
+
+/* Landingspagina: scroll-reveal (via IntersectionObserver in app.js -
+   .reveal begint onzichtbaar/verschoven, .is-visible wordt toegevoegd
+   zodra het element in beeld scrollt). */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Getrapte vertraging voor grids (features/pricing-kaarten) - elke
+   volgende kaart verschijnt net iets later. */
+.reveal-stagger > * {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.reveal-stagger.is-visible > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 80ms; }
+.reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 160ms; }
+.reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 240ms; }
+.reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 320ms; }
+.reveal-stagger.is-visible > *:nth-child(6) { transition-delay: 400ms; }
+.reveal-stagger.is-visible > *:nth-child(n+7) { transition-delay: 480ms; }
+
+.reveal-stagger.is-visible > * {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Dashboard/authenticated pagina's: lichte, automatische laad-animatie
+   (puur CSS @keyframes, geen IntersectionObserver nodig). */
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fade-in-up 0.4s ease-out both;
+}
+
+.fade-in-up-1 { animation-delay: 0ms; }
+.fade-in-up-2 { animation-delay: 60ms; }
+.fade-in-up-3 { animation-delay: 120ms; }
+
+/* Wie beweging liever vermijdt (systeeminstelling) krijgt alle inhoud
+   onmiddellijk, zonder enige animatie. */
+@media (prefers-reduced-motion: reduce) {
+    .reveal, .reveal-stagger > *, .fade-in-up {
+        animation: none !important;
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+/* Registreert border-3 als een echte Tailwind-utility (v4's
+   @utility-mechanisme) i.p.v. een losse, hardgecodeerde
+   CSS-eigenschap - zo bruikbaar als class in HTML én via @apply. */
+@utility border-3 {
+    border-width: 3px;
+}
+
+/* Tekstgroottes kleiner dan Tailwinds standaard text-xs - nodig voor
+   de mobiele-app-mockups op de landingspagina, waar het "telefoonscherm"
+   te klein is voor de kleinste standaardgrootte. */
+@utility text-2xs {
+    font-size: 0.625rem;
+    line-height: 0.875rem;
+}
+
+@utility text-3xs {
+    font-size: 0.5625rem;
+    line-height: 0.75rem;
+}
+
+.glass-card {
+    @apply bg-white/5 border-3 border-white/10 rounded-3xl p-8 backdrop-blur-xl transition-all duration-300;
+}
+
+.glass-card:hover {
+    @apply scale-105 border-green-500/30;
+}
+
+/* Consistente focusstijl op elk invoerveld (tekst/nummer/datum/select/
+   textarea), niet enkel op de custom dropdown-component - zodat de hele
+   app consistent aanvoelt. */
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+    border-color: #22c55e !important;
+    box-shadow: 0 0 0 1px #22c55e !important;
+    outline: none !important;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: #22c55e;
+}
+
+/* Het kalender-icoontje van <input type="date/datetime-local/time">
+   staat standaard donker en is dus onzichtbaar op een donkere
+   achtergrond - via een CSS-filter omgezet naar wit/groen (werkt in
+   Chromium-browsers). */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(64%) sepia(78%) saturate(496%) hue-rotate(71deg) brightness(93%) contrast(92%);
+    cursor: pointer;
+}
+
+/* =========================================================
+   PRINT-VRIENDELIJKE WEERGAVE
+   Toegepast door gewoon window.print() aan te roepen op een pagina die
+   een .print-area bevat (klassement, wedstrijdresultaten, ...) - geen
+   aparte pagina/route nodig. Verbergt alle chrome (header/footer/
+   knoppen/navigatie) en toont enkel de eigenlijke inhoud, zwart-op-wit.
+   ========================================================= */
+@media print {
+    /* Alles op visibility verbergen, niet display - dat laatste zou de
+       layout van de kinderen kunnen breken vóór .print-area terug
+       zichtbaar gemaakt wordt. Elke pagina met een .print-area drukt zo
+       automatisch enkel die inhoud af, ongeacht de rest van de pagina. */
+    body * {
+        visibility: hidden !important;
+    }
+
+    .print-area,
+    .print-area * {
+        visibility: visible !important;
+    }
+
+    .print-area {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    /* !important omdat Tailwinds tekstkleur-klassen (text-gray-x,
+       text-white, ...) anders even specifiek zijn en dus zouden
+       blijven gelden. */
+    .print-area,
+    .print-area * {
+        color: #000 !important;
+        background: transparent !important;
+        border-color: #999 !important;
+        box-shadow: none !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}
