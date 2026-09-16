@@ -81,9 +81,11 @@ flowchart LR
     B --> C[Controller]
     C --> D[Form Request<br/>validation]
     D --> E[Service layer<br/>shared with the API]
-    E --> F[(Database)]
-    C --> G[Blade view]
-    G --> H[Rendered HTML]
+    E --> F[Eloquent Model]
+    F --> G[(Database)]
+    E --> P[Policy check]
+    C --> H[Blade view]
+    H --> I[Rendered HTML]
 ```
 
 ## Architecture
